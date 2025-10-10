@@ -22,6 +22,8 @@ public class AppController {
         controlPanel.btnClear.addActionListener(this::onClear);
         controlPanel.btnExit.addActionListener(e -> System.exit(0));
         controlPanel.btnDate.addActionListener(this::onDate);
+        controlPanel.btnCurl.addActionListener(this::onCurl);
+        
     }
 
     private void onRun(ActionEvent e) {
@@ -70,6 +72,46 @@ public class AppController {
             JOptionPane.showMessageDialog(null, "Error ejecutando proceso:\n" + ex.getMessage());
         }
     }
+    private void onCurl(java.awt.event.ActionEvent e) {
+        String url = controlPanel.txtUrl.getText().trim();
+        if (url.isEmpty()) {
+          JOptionPane.showMessageDialog(null, "Introduce una URL.", "Aviso", JOptionPane.WARNING_MESSAGE);
+          return;
+        }
+        outputPanel.append("$ curl " + url);
+
+        // Comando segun SO
+        String os = System.getProperty("os.name").toLowerCase();
+        ProcessBuilder pb;
+        if (os.contains("win")) {
+          // Windows: usar curl nativo en Windows 10+ o PowerShell como alternativa
+          pb = new ProcessBuilder("cmd.exe", "/c", "curl -s " + url);
+          // Alternativa PowerShell:
+          // pb = new ProcessBuilder("powershell", "-Command", "Invoke-WebRequest -UseBasicParsing " + url + " | Select-Object -ExpandProperty Content");
+        } else {
+          pb = new ProcessBuilder("bash", "-lc", "curl -s " + url);
+        }
+        pb.redirectErrorStream(true);
+
+        try {
+          Process p = pb.start();
+          new Thread(() -> {
+            try (var br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()))) {
+              String line; while ((line = br.readLine()) != null) { outputPanel.append(line); }
+            } catch (Exception ex) { outputPanel.append("Error: " + ex.getMessage()); }
+          }).start();
+        } catch (Exception ex) {
+          JOptionPane.showMessageDialog(null, "Error ejecutando cURL:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+      }
+    
+    
+    
+    
+    
+    
+    
+    
     private void onClear(ActionEvent e) {
         outputPanel.clear();
     }
