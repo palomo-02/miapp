@@ -44,7 +44,7 @@ public class AppController {
             JOptionPane.showMessageDialog(null, "Error ejecutando proceso:\n" + ex.getMessage());
         }
     }
-
+//sssssssssssssssssssssss
     private void onClear(ActionEvent e) {
         outputPanel.clear();
     }
