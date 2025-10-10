@@ -16,9 +16,12 @@ public class AppController {
         this.outputPanel  = o;
 
         // Acciones de botones
+        
+        
         controlPanel.btnRun.addActionListener(this::onRun);
         controlPanel.btnClear.addActionListener(this::onClear);
         controlPanel.btnExit.addActionListener(e -> System.exit(0));
+        controlPanel.btnDate.addActionListener(this::onDate);
     }
 
     private void onRun(ActionEvent e) {
@@ -44,7 +47,29 @@ public class AppController {
             JOptionPane.showMessageDialog(null, "Error ejecutando proceso:\n" + ex.getMessage());
         }
     }
-//sssssssssssssssssssssss
+    private void onDate(ActionEvent e) {
+        outputPanel.append("Ejecutando comando...");
+        try {
+            ProcessBuilder pb = new ProcessBuilder("date");
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            new Thread(() -> {
+                try (var reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        outputPanel.append(line);
+                    }
+                } catch (Exception ex) {
+                    outputPanel.append("Error: " + ex.getMessage());
+                }
+            }).start();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error ejecutando proceso:\n" + ex.getMessage());
+        }
+    }
     private void onClear(ActionEvent e) {
         outputPanel.clear();
     }
